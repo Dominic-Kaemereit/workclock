@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# WorkClock ⏰
 
-## Getting Started
+Eine moderne Zeiterfassungsanwendung, entwickelt mit Next.js, React und TypeScript.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🌟 Funktionen
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+* **Intuitive Zeiterfassung:** Erfasse Arbeitszeiten einfach und übersichtlich.
+* **Simple UI:** Eine benutzerfreundliche Oberfläche für schnelle Eingaben.
+* **Containerisierung:** Einfache Bereitstellung via Docker & Docker Compose.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🚀 Erste Schritte
 
-## Learn More
+### Voraussetzungen
 
-To learn more about Next.js, take a look at the following resources:
+* Node.js (>= 20.x)
+* npm
+* git
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Lokale Entwicklung
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. **Repository klonen:**
+    ```bash
+    git clone https://github.com/Dominic-Kaemereit/workclock.git
+    cd workclock
+    ```
 
-## Deploy on Vercel
+2. **Abhängigkeiten installieren:**
+    ```bash
+    npm install
+    ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+3. **Entwicklungsserver starten:**
+    ```bash
+    npm run dev
+    ```
+   Die App läuft dann unter [http://localhost:3000](http://localhost:3000).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 🐳 Deployment mit Docker Compose
+
+1. Um die Anwendung mit dem veröffentlichten Image aus der GitHub Container Registry zu starten, erstelle folgende `docker-compose.yml` Datei:
+    ```yaml
+    services:
+      workclock:
+        image: ghcr.io/dominic-kaemereit/workclock:main
+        restart: unless-stopped
+        ports:
+          - "3000:3000"
+    #       <host_port>:<container_port>
+    ```
+
+2. **Container starten:**
+    ```bash
+    docker compose up -d
+    ```
+
+3. Die Anwendung ist unter [http://localhost:8080](http://localhost:8080) erreichbar (Port ggf. in `docker-compose.yml` anpassen).
+
+4. **Container stoppen:**
+    ```bash
+    docker compose down
+    ```
