@@ -1,28 +1,23 @@
-FROM node:20-alpine AS deps
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
+# Schritt 1: Basisimage
+FROM node:20-alpine
 
-FROM node:20-alpine AS builder
+# Schritt 2: Arbeitsverzeichnis erstellen
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+
+# Schritt 3: Kopiere die package.json und package-lock.json (oder yarn.lock)
+COPY package*.json ./
+
+# Schritt 4: Installiere Abhängigkeiten
+RUN npm install
+
+# Schritt 5: Kopiere den Rest des Projekts
 COPY . .
+
+# Schritt 6: Baue das Projekt
 RUN npm run build
 
-FROM node:20-alpine AS runner
-WORKDIR /app
-ENV NODE_ENV production
-
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-
-COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-USER nextjs
-
+# Schritt 7: Exponiere den Port, auf dem Next.js läuft
 EXPOSE 3000
-ENV PORT 3000
 
-CMD ["node", "server.js"]
+# Schritt 8: Starte die Anwendung
+CMD ["npm", "run", "start"]
