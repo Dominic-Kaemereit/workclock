@@ -112,28 +112,47 @@ function renderLoading() {
 }
 
 function renderView(handleReset: () => void, startTime: Date | null, endTime: Date | null, timeLeft: string) {
-    return <div>
-        {startTime && endTime && (
-            <div className="mb-4 dark:text-white">
-                <h2 className="text-2xl font-bold">Arbeitszeit läuft</h2>
-                <p className="text-md">
-                    Du hast deine Arbeitszeit um {startTime.toLocaleTimeString()} gestartet und wirst voraussichtlich um {endTime.toLocaleTimeString()} fertig sein.
-                </p>
+    return (
+        <div className="space-y-6 dark:text-white">
+            {startTime && endTime && (
+                <div className="p-6 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg">
+                    <h2 className="text-2xl font-bold mb-4">
+                        Arbeitszeit läuft
+                    </h2>
 
-                <p className="text-mb">
-                    Du musst noch {timeLeft} arbeiten.
-                </p>
+                    <div className="grid gap-4 md:grid-cols-2">
+                        <div className="p-4 bg-white/10 rounded-xl">
+                            <p className="text-sm opacity-80">Gestartet um</p>
+                            <p className="text-lg font-semibold">
+                                {startTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                            </p>
+                        </div>
 
-            </div>
-        )}
+                        <div className="p-4 bg-white/10 rounded-xl">
+                            <p className="text-sm opacity-80">Voraussichtliches Ende</p>
+                            <p className="text-lg font-semibold">
+                                {endTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                            </p>
+                        </div>
 
-        <button
-            onClick={handleReset}
-            className="ml-4 px-4 py-2 rounded-lg shadow-md text-white bg-red-500 hover:bg-red-600"
-        >
-            Zurücksetzen
-        </button>
-    </div>;
+                        <div className="p-4 bg-white/10 rounded-xl col-span-2 text-center">
+                            <p className="text-sm opacity-80">Verbleibende Zeit</p>
+                            <p className="text-2xl font-bold tracking-wide">
+                                {timeLeft}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            <button
+                onClick={handleReset}
+                className="w-full md:w-auto flex justify-center px-6 py-3 rounded-xl shadow-md text-white bg-red-500 hover:bg-red-600 transition"
+            >
+                Zurücksetzen
+            </button>
+        </div>
+    );
 }
 
 function renderSetUp(
