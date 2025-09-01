@@ -3,7 +3,7 @@ import {useEffect, useState} from "react";
 export default function WorkClock() {
     const [loading, setLoading] = useState(true);
     const [started, setStarted] = useState(false);
-    const [startTime, setStartTime] = useState<Date | null>(null);
+    const [startTime, setStartTime] = useState<Date | null>(new Date()); // Standardmäßig aktuelle Zeit
     const [endTime, setEndTime] = useState<Date | null>(null);
     const [neededHours, setNeededHours] = useState(7.6);
     const [breakMinutes, setBreakMinutes] = useState(30);
@@ -39,14 +39,13 @@ export default function WorkClock() {
     }, []);
 
     const handleStart = () => {
-        const now = new Date();
-        const end = calculateEndTime(now, neededHours, breakMinutes);
+        if (!startTime) return;
+        const end = calculateEndTime(startTime, neededHours, breakMinutes);
 
         setStarted(true);
-        setStartTime(now);
         setEndTime(end);
 
-        localStorage.setItem("startTime", now.toISOString());
+        localStorage.setItem("startTime", startTime.toISOString());
         localStorage.setItem("endTime", end.toISOString());
         localStorage.setItem("neededHours", neededHours.toString());
         localStorage.setItem("breakMinutes", breakMinutes.toString());
@@ -54,7 +53,7 @@ export default function WorkClock() {
 
     const handleReset = () => {
         setStarted(false);
-        setStartTime(null);
+        setStartTime(new Date());
         setEndTime(null);
         setTimeLeft("");
         localStorage.clear();
@@ -103,7 +102,7 @@ export default function WorkClock() {
         <br/>
         <div
             className="p-4 bg-white rounded-lg border border-gray-200 shadow-md dark:bg-gray-800 dark:border-gray-700">
-            {loading ? renderLoading() : started ? renderView(handleReset, startTime, endTime, timeLeft) : renderSetUp(breakMinutes, setBreakMinutes, neededHours, setNeededHours, handleStart)}
+            {loading ? renderLoading() : started ? renderView(handleReset, startTime, endTime, timeLeft) : renderSetUp(breakMinutes, setBreakMinutes, neededHours, setNeededHours, startTime, setStartTime, handleStart)}
         </div>
     </div>;
 }
@@ -140,16 +139,17 @@ function renderView(handleReset: () => void, startTime: Date | null, endTime: Da
 function renderSetUp(
     breakMinutes: number, setBreakMinutes: (minutes: number) => void,
     neededHours: number, setNeededHours: (hours: number) => void,
+    startTime: Date | null, setStartTime: (time: Date) => void,
     handleStart: () => void) {
     return <div>
-        <div className="grid gap-6 mb-6 md:grid-cols-2">
+        <div className="grid gap-6 mb-6 md:grid-cols-3">
             <div>
                 <label
-                    htmlFor="first_name"
+                    htmlFor="needed_hours"
                     className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Benötigte Arbeitsstunden</label>
                 <input
                     type="number"
-                    id="first_name"
+                    id="needed_hours"
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     placeholder="7,6"
                     value={neededHours}
@@ -158,16 +158,33 @@ function renderSetUp(
             </div>
             <div>
                 <label
-                    htmlFor="last_name"
+                    htmlFor="break_minutes"
                     className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Pausenzeit (Minuten)</label>
                 <input
                     type="number"
-                    id="last_name"
+                    id="break_minutes"
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     placeholder="30"
                     value={breakMinutes}
                     onChange={(e) => setBreakMinutes(parseInt(e.target.value))}
                     required />
+            </div>
+            <div>
+                <label
+                    htmlFor="start_time"
+                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Startzeit</label>
+                <input
+                    type="time"
+                    id="start_time"
+                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    value={startTime ? startTime.toISOString().substring(11,16) : ""}
+                    onChange={(e) => {
+                        const [hours, minutes] = e.target.value.split(":").map(Number);
+                        const newTime = new Date();
+                        newTime.setHours(hours, minutes, 0, 0);
+                        setStartTime(newTime);
+                    }}
+                />
             </div>
         </div>
         <button
