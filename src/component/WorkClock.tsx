@@ -3,11 +3,11 @@ import {useEffect, useState} from "react";
 export default function WorkClock() {
     const [loading, setLoading] = useState(true);
     const [started, setStarted] = useState(false);
-    const [startTime, setStartTime] = useState<Date | null>(new Date()); // Standardmäßig aktuelle Zeit
+    const [startTime, setStartTime] = useState<Date | null>(new Date());
     const [endTime, setEndTime] = useState<Date | null>(null);
     const [neededHours, setNeededHours] = useState(7.6);
-    const [breakMinutes, setBreakMinutes] = useState(30);
-    const [timeLeft, setTimeLeft] = useState<string>("");
+    const [breakMinutes, setBreakMinutes] = useState(30);const [timeLeft, setTimeLeft] = useState<string>("");
+    const [overtime, setOvertime] = useState<string | null>(null);
 
     useEffect(() => {
         const savedStart = localStorage.getItem("startTime");
@@ -38,18 +38,47 @@ export default function WorkClock() {
         setLoading(false);
     }, []);
 
+    useEffect(() => {
+        if (!endTime) return;
+
+        const timer = setInterval(() => {
+            const now = new Date();
+            const diff = endTime.getTime() - now.getTime();
+
+            if (diff <= 0) {
+                // Überstunden berechnen
+                const overtimeMs = Math.abs(diff);
+                const hours = Math.floor(overtimeMs / (1000 * 60 * 60));
+                const minutes = Math.floor((overtimeMs % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((overtimeMs % (1000 * 60)) / 1000);
+
+                setTimeLeft("Fertig 🎉");
+                setOvertime(`${hours}h ${minutes}m ${seconds}s`);
+            } else {
+                // Normale Restzeit
+                const hours = Math.floor(diff / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                setTimeLeft(`${hours}h ${minutes}m ${seconds}s`);
+                setOvertime(null);
+            }
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [endTime]);
+
     const handleStart = () => {
         if (!startTime) return;
-        const end = calculateEndTime(startTime, neededHours, breakMinutes);
 
-        setStarted(true);
+        const end = calculateEndTime(startTime, neededHours, breakMinutes); setStarted(true);
         setEndTime(end);
-
         localStorage.setItem("startTime", startTime.toISOString());
         localStorage.setItem("endTime", end.toISOString());
         localStorage.setItem("neededHours", neededHours.toString());
         localStorage.setItem("breakMinutes", breakMinutes.toString());
     };
+
 
     const handleReset = () => {
         setStarted(false);
@@ -83,7 +112,7 @@ export default function WorkClock() {
         return () => clearInterval(timer);
     }, [endTime]);
 
-    return <div className="min-h-screen bg-gradient-to-r from-blue-500 to-purple-600 p-32">
+    return <div className="min-h-screen bg-gradient-to-r from-blue-500 to-purple-600 p-18">
         <div className="relative p-4 bg-[url('/67052cc631d87fc09b0548b5_0.jpeg')] bg-cover bg-center rounded-4xl border h-64">
 
             <div className="absolute inset-0 bg-black opacity-40 rounded-4xl"></div>
@@ -102,7 +131,7 @@ export default function WorkClock() {
         <br/>
         <div
             className="p-4 bg-white rounded-lg border border-gray-200 shadow-md dark:bg-gray-800 dark:border-gray-700">
-            {loading ? renderLoading() : started ? renderView(handleReset, startTime, endTime, timeLeft) : renderSetUp(breakMinutes, setBreakMinutes, neededHours, setNeededHours, startTime, setStartTime, handleStart)}
+            {loading ? renderLoading() : started ? renderView(handleReset, startTime, endTime, timeLeft, overtime) : renderSetUp(breakMinutes, setBreakMinutes, neededHours, setNeededHours, startTime, setStartTime, handleStart)}
         </div>
     </div>;
 }
@@ -111,7 +140,7 @@ function renderLoading() {
     return <div>Loading...</div>
 }
 
-function renderView(handleReset: () => void, startTime: Date | null, endTime: Date | null, timeLeft: string) {
+function renderView(handleReset: () => void, startTime: Date | null, endTime: Date | null, timeLeft: string, overtime: string | null) {
     return (
         <div className="space-y-6 dark:text-white">
             {startTime && endTime && (
@@ -135,12 +164,23 @@ function renderView(handleReset: () => void, startTime: Date | null, endTime: Da
                             </p>
                         </div>
 
-                        <div className="p-4 bg-white/10 rounded-xl col-span-2 text-center">
-                            <p className="text-sm opacity-80">Verbleibende Zeit</p>
-                            <p className="text-2xl font-bold tracking-wide">
-                                {timeLeft}
-                            </p>
-                        </div>
+                        {timeLeft && (
+                            <div className="p-4 bg-white/10 rounded-xl col-span-2 text-center">
+                                <p className="text-sm opacity-80">Verbleibende Zeit</p>
+                                <p className="text-2xl font-bold tracking-wide">
+                                    {timeLeft}
+                                </p>
+                            </div>
+                        )}
+
+                        {overtime && (
+                            <div className="p-4 bg-white/10 rounded-xl col-span-2 text-center">
+                                <p className="text-sm opacity-80">Überstunden</p>
+                                <p className="text-2xl font-bold tracking-wide text-white">
+                                    {overtime}
+                                </p>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
@@ -196,7 +236,11 @@ function renderSetUp(
                     type="time"
                     id="start_time"
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                    value={startTime ? startTime.toISOString().substring(11,16) : ""}
+                    value={
+                        startTime
+                            ? `${String(startTime.getHours()).padStart(2, "0")}:${String(startTime.getMinutes()).padStart(2, "0")}`
+                            : ""
+                    }
                     onChange={(e) => {
                         const [hours, minutes] = e.target.value.split(":").map(Number);
                         const newTime = new Date();
