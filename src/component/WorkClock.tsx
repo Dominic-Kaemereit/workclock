@@ -139,8 +139,7 @@ export default function WorkClock() {
                         </div>
                     </div>
                 </div>
-                {
-                    loading ? <LoadingView /> :
+                {loading ? <LoadingView /> :
                         started ? <WorkClockView
                                 handleReset={handleReset}
                                 startTime={startTime}
