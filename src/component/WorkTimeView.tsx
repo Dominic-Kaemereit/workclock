@@ -69,7 +69,7 @@ export default function WorkClockView({
                                                 </div>
                                                 <p className="text-sm font-medium text-muted-foreground dark:text-gray-400">Voraussichtliches Ende</p>
                                             </div>
-                                            <p className="text-3xl font-bold text-accent dark:text-purple-400">
+                                            <p className="text-3xl font-bold text-accent text-primary dark:text-blue-400">
                                                 {endTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                                             </p>
                                         </div>
@@ -87,7 +87,7 @@ export default function WorkClockView({
                                                     { <span className="text-green-500 dark:text-green-400">{overtime}</span> }
                                                 </div>
                                                 <div className="bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 px-6 py-3 rounded-full inline-block border border-orange-200 dark:border-orange-800">
-                                                    <span className="font-semibold">Sie arbeiten bereits in Überstunden</span>
+                                                    <span className="font-semibold text-primary dark:text-blue-400">Sie arbeiten bereits in Überstunden</span>
                                                 </div>
                                             </div>
                                         )}
@@ -97,7 +97,7 @@ export default function WorkClockView({
                                                     Verbleibende Zeit
                                                 </p>
                                                 <div className="text-7xl md:text-4xl font-bold mb-8 text-transparent bg-gradient-to-r from-primary to-accent dark:from-blue-400 dark:to-purple-400 bg-clip-text">
-                                                    {timeLeft}
+                                                    <p className="text-black dark:text-blue-400">{timeLeft}</p>
                                                 </div>
                                             </div>
                                         )}
