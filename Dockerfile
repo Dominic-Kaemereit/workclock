@@ -1,23 +1,35 @@
-# Schritt 1: Basisimage
-FROM node:20-alpine
-
-# Schritt 2: Arbeitsverzeichnis erstellen
+# Stage 1: Dependencies
+FROM node:24-alpine AS deps
 WORKDIR /app
 
-# Schritt 3: Kopiere die package.json und package-lock.json (oder yarn.lock)
-COPY package*.json ./
+COPY package.json package-lock.json* ./
+RUN npm ci
 
-# Schritt 4: Installiere Abhängigkeiten
-RUN npm install
+# Stage 2: Builder
+FROM node:24-alpine AS builder
+WORKDIR /app
 
-# Schritt 5: Kopiere den Rest des Projekts
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Schritt 6: Baue das Projekt
+ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
-# Schritt 7: Exponiere den Port, auf dem Next.js läuft
+# Stage 3: Production Runner
+FROM node:24-alpine AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=node:node /app/.next/standalone ./
+COPY --from=builder --chown=node:node /app/.next/static ./.next/static
+
+USER node
+
 EXPOSE 3000
 
-# Schritt 8: Starte die Anwendung
-CMD ["npm", "run", "start"]
+CMD ["node", "server.js"]
