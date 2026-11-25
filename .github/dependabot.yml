@@ -6,6 +6,10 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
+    ignore:
+      # typescript-eslint currently supports TypeScript < 6.1.0 (TS 7.0 lacks stable JS API)
+      - dependency-name: "typescript"
+        versions: [">= 7.0.0, < 7.1.0"]
 
   # Docker Base-Image (Dockerfile)
   - package-ecosystem: "docker"
